@@ -1,0 +1,168 @@
+Breve introducción:
+Explicar brevemente como se pasa de una aplicación monolítica a la division de frontend y backend
+
+En su uso original, el término "monolítico" hacía referencia grandes aplicaciones que no podían ser usadas de forma modular. Esto – junto con el rápido aumento en capacidad de cómputo y por tanto el rápido aumento en la complejidad de los problemas que podían ser resueltos mediante software – dieron como resultado sistemas inmantenibles y la crisis de software
+
+Evolución de javascript
+
+Motor de javascript v8 aparición de nodeJS basado en el motor V8
+
+Explicar la aparición de framework de desarrollo para crear aplicaciones web.
+
+Ruta para Iniciar aplicación de nest de ejemplo
+
+Ir a la documentación del framework
+Consultar en la documentación para lo que refiere a la construcción así de esta manera se podrá apreciar el nivel y la certeza de la misma.
+
+Instalar cliente
+	npm i -g @nestjs/cli
+Iniciar nuevo projecto
+	nest new project-name
+
+Mover servicio y controlador a una carpeta especifica para cada componente
+Corregir rutas de importaciones en cada componente así como también en el modulo principal
+
+Iniciar la aplicación para verificar el funcionamiento
+
+Abrir insomia y probar los endpoints en el puerto 3000
+
+products-get  http://localhost:3000/products
+products get id http://localhost:3000/products/123
+product create http://localhost:3000/products
+products update http://localhost:3000/products/123
+products delete http://localhost:3000/products/123
+
+Crear las propiedades de la entidad
+  id: number;
+  name: string;
+  description:string;
+  price: number;
+  stock:number;
+  image: string;
+
+Antes de crear nuestros dto’s instalar la dependencia necesaria para poder validar los tipos
+https://docs.nestjs.com/techniques/validation#validation
+npm i --save class-validator class-transformer
+
+Crear el DTO
+
+Antes de continuar preparar la configuración de swagger 
+Ir  a la documentación
+Probar el swagger
+Revisar el DTO y agregar configuración en nest-cli.json desde la documentación (open api)
+Revisar el DTO de update, ahi cambiar la importación de partialType a Swagger	
+
+Probar la api y mostrar que no funciona la validación del dto.
+	Configurar en el main.ts la siguiente linea
+		app.useGlobalPipes(new ValidationPipe());
+
+Preparar el archivo:  docker-compose.yml
+
+###############
+##   .gitignore 
+## /mongo_data
+###############
+
+#docker-compose up -d mongo   // iniciar el contenedor
+#docker-compose ps            // mostar el contenedor en consola
+#docker-compose down          // detener el contenedor
+
+# docker-compose.yml
+version: '3.3'
+
+services:
+  mongo:
+    image: mongo:4.4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - 27017:27017
+    volumes:
+     - ./mongo_data:/data/db
+
+Conectarse con MongoCompass
+
+Instalar las dependencias de mongoose según la documentación
+
+Ir al app, modules.ts 	importar:  import { MongooseModule } from '@nestjs/mongoose'
+
+Dentro de los imports: ()
+
+
+Preparar archivos de configuración
+.env
+.test.env
+.prod.end
+
+// .env, .test.env, .prod.env
+PORT=3000
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=secret
+MONGO_DB=tienda
+MONGO_PORT=27017
+MONGO_HOST=localhost
+MONGO_CONNECTION=mongodb
+
+Preparar el diccionario de config
+
+export const enviroments = {
+  dev: '.env',
+  test: '.env.’test,
+  prod: '.env.production,
+}
+
+Config.ts
+
+import { registerAs } from '@nestjs/config';
+
+export default registerAs('config', () => {
+  return {
+    mongo: {
+      dbName: process.env.MONGO_DB,
+      user: process.env.fgf,
+      password: process.env.MONGO_INITDB_ROOT_PASSWORD,
+      port: process.env.MONGO_PORT,
+      host: process.env.MONGO_HOST,
+      connection: process.env.MONGO_CONNECTION,
+    },
+    api: {
+      port: process.env.PORT,
+      apikey: process.env.APIKEY,
+    }
+  };
+});
+
+https://keygen.io/
+
+2ebe57ffed05f139df42851d6217ca623d270bca3f59e109f595102c283073bf
+
+
+Antes de continuar ir a la pagina de nest y buscar la dependencia para poder cargar la configuración
+npm i --save @nestjs/config
+
+Ir alapp.module.ts y realizar los siguiente cambios
+	
+	import { ConfigModule } from '@nestjs/config';
+	
+Al final de las importaciones pegar el siguiente código  	import { enviroments } from './enviroments';
+	import config from './config';
+
+  ConfigModule.forRoot({
+      envFilePath: enviroments[process.env.NODE_ENV] || '.env',
+      load: [config],
+      isGlobal: true,
+      validationSchema: Joi.object({
+        API_KEY: Joi.string().required(),
+        PORT: Joi.number().required(),
+      }),
+    }),
+
+
+Agregar dentro del array de imports la siguiente configuracion( hacer espacio primero por una cuestión de orden )
+
+    ConfigModule.forRoot({
+      envFilePath: enviroments[process.env.NODE_ENV] || '.env',
+      load: [config]
+    }),
+
